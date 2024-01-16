@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        "custom-red": "#FF6347",
-        "custom-orange": "#FFA500",
-        "custom-green": "#90EE90",
+        "custom-red": "rgba(255, 99, 71, 0.9)",
+        "custom-orange": "rgba(255, 205, 0, 0.7)",
+        "custom-green": "rgba(144, 238, 144, 0.7)",
       },
       boxShadow: {
-        blue: "rgba(59, 130, 246, 1) 0px 0px 0px 2px",
+        blue: "rgba(59, 130, 246, 0.7) 0px 0px 0px 4px",
       },
     },
   },

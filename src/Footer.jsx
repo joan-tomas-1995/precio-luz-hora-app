@@ -3,7 +3,7 @@ import React from "react";
 const Footer = () => {
   return (
     <div className="flex flex-col w-full h-[10vh] justify-center items-center text-xs">
-      <p className="text-center text-[#444] m-2">
+      <p className="text-center text-[#fff] m-2">
         Los datos mostrados son extraidos de la API de{" "}
         <a
           className="text-blue-600 hover:underline"
@@ -13,7 +13,7 @@ const Footer = () => {
         </a>
       </p>
 
-      <p className="text-center text-[#444]">
+      <p className="text-center text-[#fff]">
         Web creada por{" "}
         <a
           className="text-blue-600 hover:underline"
