@@ -127,10 +127,14 @@ const LightPrice = () => {
       </div>
 
       <div className="text-md m-8 text-center w-[90%] sm:w-[47%] bg-[#e6e6e6] rounded-md p-4 md:p-6 text-[#333] ">
-        Estás en el lugar correcto para obtener información actualizada sobre los precios
-        de la luz para hoy. Los precios varían a lo largo del día, por lo que hemos
-        desglosado las tarifas por hora para ayudarte a entender cuándo es más económico
-        consumir electricidad.
+        ¿Buscas el precio de la luz por hora para hoy? Conoce cuándo es más económico usar
+        electricidad con nuestro desglose del precio luz hora. Mantente al día con el
+        precio hora luz hoy y planifica tu consumo para ahorrar. Descubre el precio
+        luzhora más bajo y aprovecha las tarifas reducidas. Entiende mejor el término
+        luzhora y cómo afecta tu factura. Con nuestras actualizaciones sobre el precio de
+        la hora luz hoy, toma decisiones inteligentes y reduce tus gastos en electricidad.
+        Visítanos para información precisa y consejos sobre el precio de la luz por hora.
+        ¡Ahorra en tu consumo eléctrico desde hoy!
       </div>
       <div className="w-screen max-w-4xl grid grid-cols-2 md:gap-4 px-4 justify-center items-center">
         {data ? (
