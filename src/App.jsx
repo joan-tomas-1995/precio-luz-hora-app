@@ -5,12 +5,16 @@ import Footer from "./Footer";
 import { Loading } from "./Loading";
 import { ArrowUp, ArrowDown } from "./arrows";
 import FAQ from "./Faq";
+import Chart from "chart.js/auto";
+import CalculadoraEnergia from "./CalculadoraEnergia";
 
 const LightPrice = () => {
   const [data, setData] = useState(null);
   const [date, setDate] = useState(null);
   const [currentHour, setCurrentHour] = useState(null);
   const [sizeArrow, setSizeArrow] = useState(30);
+  const [chartInstance, setChartInstance] = useState(null);
+  const [precioActual, setPrecioActual] = useState(0);
 
   useEffect(() => {
     function changeWidth() {
@@ -115,6 +119,90 @@ const LightPrice = () => {
     });
   }
 
+  const getPriceColorChart = (price) => {
+    const averagePrice = calculateAveragePrice();
+    if (price > averagePrice * 1.2) {
+      return "rgba(255, 99, 71, 0.9)";
+    } else if (price > averagePrice) {
+      return "rgba(255, 205, 0, 0.7)";
+    } else {
+      return "rgba(144, 238, 144, 0.7)";
+    }
+  };
+
+  useEffect(() => {
+    if (data) {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      const ctx = document.getElementById("price-chart").getContext("2d");
+
+      const labels = data.included[0].attributes.values.map(
+        (value) => new Date(value.datetime).getHours() + ":00"
+      );
+      const prices = data.included[0].attributes.values.map((value) => value.value);
+
+      const backgroundColors = prices.map((price) => {
+        //console.log("price: ", getPriceColorChart(price));
+        return getPriceColorChart(price);
+      });
+
+      const newChartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "€/kWh",
+              data: prices,
+              backgroundColor: backgroundColors,
+              borderColor: "black",
+              borderWidth: 1,
+              fill: {
+                target: "origin",
+                above: "rgb(230, 230, 230, 0.30)",
+                below: "rgb(0, 0, 255)",
+              },
+            },
+          ],
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: "white",
+              },
+            },
+            x: {
+              ticks: {
+                color: "white",
+              },
+            },
+          },
+        },
+      });
+
+      setChartInstance(newChartInstance);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (data) {
+      const currentData = filterByTime(
+        data.included[0].attributes.values,
+        currentHour,
+        currentHour + 1
+      );
+      if (currentData.length > 0) {
+        setPrecioActual(currentData[0].value);
+      }
+    }
+  }, [currentHour, data]);
+
   return (
     <div className="w-auto h-auto flex flex-col justify-center items-center">
       <div className="text-2xl m-4 text-center bg-[#e6e6e6] rounded-md p-4 md:p-6 text-[#333] ">
@@ -125,16 +213,17 @@ const LightPrice = () => {
           </p>
         </h1>
       </div>
-
-      <div className="text-md m-8 text-center w-[90%] sm:w-[47%] bg-[#e6e6e6] rounded-md p-4 md:p-6 text-[#333] ">
+      <div className="text-md m-8 text-center w-[90%] sm:w-[47%] bg-[#e6e6e6] rounded-md p-4 md:p-6 text-[#333]">
         ¿Buscas el precio de la luz por hora para hoy? Conoce cuándo es más económico usar
-        electricidad con nuestro desglose del precio luz hora. Mantente al día con el
-        precio hora luz hoy y planifica tu consumo para ahorrar. Descubre el precio
-        luzhora más bajo y aprovecha las tarifas reducidas. Entiende mejor el término
-        luzhora y cómo afecta tu factura. Con nuestras actualizaciones sobre el precio de
-        la hora luz hoy, toma decisiones inteligentes y reduce tus gastos en electricidad.
-        Visítanos para información precisa y consejos sobre el precio de la luz por hora.
-        ¡Ahorra en tu consumo eléctrico desde hoy!
+        electricidad con nuestro desglose del precio luz hora y nuestro grafico de barras.
+        Mantente al día con el precio hora luz hoy y planifica tu consumo para ahorrar.
+        Descubre el precio luzhora más bajo y aprovecha las tarifas reducidas. Entiende
+        mejor el término luzhora y cómo afecta tu factura. Con nuestras actualizaciones
+        sobre el precio de la hora luz hoy, toma decisiones inteligentes y reduce tus
+        gastos en electricidad.
+      </div>
+      <div className="chart-container md:w-[70%] w-[100%] md:h-[400px] h-[150%] flex flex-col justify-center items-center p-4">
+        <canvas id="price-chart" />
       </div>
       <div className="w-screen max-w-4xl grid grid-cols-2 md:gap-4 px-4 justify-center items-center">
         {data ? (
@@ -142,57 +231,57 @@ const LightPrice = () => {
             <div className="flex flex-col ">
               <h2 className="text-sm md:text-xl mb-2 text-center m-2 bg-[#e6e6e6] rounded-md p-2 text-[#333]">
                 {" "}
-                de 0:00 a 12:00
+                0:00 a 12:00
               </h2>
               {filterByTime(data.included[0].attributes.values, 0, 12).map(
                 (value, index) => (
                   <div
-                    className={`text-sm md:text-lg flex flex-col m-2 bg-[#e6e6e6] rounded-md p-2 md:p-4 text-[#333] ${
+                    className={`text-lg md:text-xl flex flex-row m-2 bg-[#e6e6e6] rounded-md p-2 md:p-4 text-[#333]  justify-center${
                       currentHour === new Date(value.datetime).getHours()
-                        ? "shadow-blue"
+                        ? " shadow-blue"
                         : ""
                     } ${getPriceColor(value.value)}`}
                     key={index}>
                     <p
                       key={index}
-                      className="flex flex-col md:flex-row justify-between items-center">
+                      className="flex flex-col md:flex-row justify-between items-center md:gap-24">
                       <p>
                         {new Date(value.datetime).getHours()}:00 -{" "}
                         {new Date(value.datetime).getHours() + 1}:00
                       </p>
                       <span className="flex flex-row font-bold">
-                        <span className="pr-2">
-                          {expensivePrice === value.value ? (
-                            <ArrowUp sizeArrow={sizeArrow} />
-                          ) : (
-                            ""
-                          )}
-                        </span>
-                        <span className="pr-2">
-                          {cheapestPrice === value.value ? (
-                            <ArrowDown sizeArrow={sizeArrow} />
-                          ) : (
-                            ""
-                          )}
-                        </span>
                         {(Math.round((value.value / 1000) * 1000) / 1000).toFixed(3)}{" "}
                         €/kWh
                       </span>{" "}
                     </p>
+                    <span className="flex justify-center	align-middle">
+                      {expensivePrice === value.value ? (
+                        <ArrowUp sizeArrow={sizeArrow} />
+                      ) : (
+                        ""
+                      )}
+                    </span>
+                    <span className="flex justify-center align-middle">
+                      {cheapestPrice === value.value ? (
+                        <ArrowDown sizeArrow={sizeArrow} />
+                      ) : (
+                        ""
+                      )}
+                    </span>
                   </div>
                 )
               )}
             </div>
             <div className="flex flex-col">
-              <h2 className="text-center text-sm md:text-xl mb-2 m-2 bg-[#e6e6e6] rounded-md p-2 text-[#333]">
-                de 12:00 a 24:00
+              <h2 className="text-sm md:text-xl mb-2 text-center m-2 bg-[#e6e6e6] rounded-md p-2 text-[#333]">
+                12:00 a 24:00
               </h2>
               {filterByTime(data.included[0].attributes.values, 12, 24).map(
                 (value, index) => (
                   <div
-                    className={`text-sm md:text-lg flex flex-col m-2 bg-[#e6e6e6] rounded-md p-2 md:p-4 text-[#333] ${
+                    className={`text-lg md:text-xl flex flex-row m-2 bg-[#e6e6e6] rounded-md p-2 md:p-4 text-[#333]  justify-center	${
                       currentHour === new Date(value.datetime).getHours()
-                        ? "shadow-blue"
+                        ? " shadow-blue"
                         : ""
                     } ${getPriceColor(value.value)} 
                     
@@ -200,30 +289,31 @@ const LightPrice = () => {
                     key={index}>
                     <p
                       key={index}
-                      className="flex flex-col md:flex-row justify-between items-center">
+                      className="flex flex-col md:flex-row justify-between items-center md:gap-24">
+                      {/* ESTE ES EL CODIGO BUENO */}
                       <p>
                         {new Date(value.datetime).getHours()}:00 -{" "}
                         {new Date(value.datetime).getHours() + 1}:00
                       </p>
                       <span className="flex flex-row font-bold">
-                        <span className="pr-2">
-                          {expensivePrice === value.value ? (
-                            <ArrowUp sizeArrow={sizeArrow} />
-                          ) : (
-                            ""
-                          )}
-                        </span>
-                        <span className="pr-2">
-                          {cheapestPrice === value.value ? (
-                            <ArrowDown sizeArrow={sizeArrow} />
-                          ) : (
-                            ""
-                          )}
-                        </span>
                         {(Math.round((value.value / 1000) * 1000) / 1000).toFixed(3)}{" "}
                         €/kWh
                       </span>{" "}
                     </p>
+                    <span className="flex justify-center	align-middle">
+                      {expensivePrice === value.value ? (
+                        <ArrowUp sizeArrow={sizeArrow} />
+                      ) : (
+                        ""
+                      )}
+                    </span>
+                    <span className="flex justify-center	align-middle">
+                      {cheapestPrice === value.value ? (
+                        <ArrowDown sizeArrow={sizeArrow} />
+                      ) : (
+                        ""
+                      )}
+                    </span>
                   </div>
                 )
               )}
@@ -275,7 +365,9 @@ const LightPrice = () => {
           ahorrar en sus facturas mensuales.
         </p>
       </div>
-
+      <div className="bg-[#e6e6e6] rounded-md p-4 md:p-6 m-8 w-[90%] sm:w-[47%] mx-auto text-black">
+        <CalculadoraEnergia precioActual={precioActual} />
+      </div>
       <div className="w-[90%] sm:w-[47%] m-4">
         <FAQ />
       </div>
